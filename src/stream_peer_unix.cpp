@@ -10,6 +10,27 @@
 
 using namespace godot;
 
+String StreamPeerUnix::read() {
+  String result;
+  int32_t bytes_to_read = get_available_bytes() - total_bytes;
+  uint8_t* buf = new uint8_t[bytes_to_read];
+  int32_t received;
+
+  Error error = _get_data(buf,bytes_to_read, &received);
+  
+  if (error == Error::OK) {
+    std::string receivedString(reinterpret_cast<char*>(buf), received);
+    result = receivedString.c_str();
+  }
+  else {
+    result = "Error reading socket";
+  }
+  
+  total_bytes = get_available_bytes();
+  delete[] buf;
+  return result;
+}
+
 Error StreamPeerUnix::_get_data(uint8_t *p_buffer, int32_t p_bytes, int32_t *r_received) {
   ERR_FAIL_COND_V(not is_open(), Error::ERR_UNCONFIGURED);
   ERR_FAIL_COND_V(p_bytes < 0, Error::ERR_INVALID_PARAMETER);
@@ -45,6 +66,19 @@ Error StreamPeerUnix::_get_partial_data(uint8_t *p_buffer, int p_bytes, int *r_r
     error = Error::ERR_FILE_EOF;
     close();
   } else *r_received = result;
+
+  return error;
+}
+
+Error StreamPeerUnix::write(String request) {
+  const char *request_data = request.utf8().get_data();
+  int32_t bytes_to_send = static_cast<int32_t>(strlen(request_data));
+  uint8_t* uint8_data = new uint8_t[bytes_to_send];
+  
+  memcpy(uint8_data, request_data, bytes_to_send);
+  int32_t sent_bytes;
+
+  Error error = _put_data(uint8_data, bytes_to_send, &sent_bytes);
 
   return error;
 }
@@ -144,10 +178,13 @@ StreamPeerUnix::~StreamPeerUnix() {
 }
 
 void StreamPeerUnix::_bind_methods() {
-  ClassDB::bind_method(D_METHOD("open"), &StreamPeerUnix::open);
+  ClassDB::bind_method(D_METHOD("open", "path"), &StreamPeerUnix::open);
   ClassDB::bind_method(D_METHOD("get_path"), &StreamPeerUnix::get_path);
   ClassDB::bind_method(D_METHOD("is_open"), &StreamPeerUnix::is_open);
   ClassDB::bind_method(D_METHOD("close"), &StreamPeerUnix::close);
+
+  ClassDB::bind_method(D_METHOD("write", "request"), &StreamPeerUnix::write);
+  ClassDB::bind_method(D_METHOD("read"), &StreamPeerUnix::read);
 
   ClassDB::bind_method(D_METHOD("set_blocking_mode"),
                        &StreamPeerUnix::set_blocking_mode);

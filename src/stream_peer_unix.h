@@ -15,6 +15,7 @@ protected:
   int socketfd = -1;
   godot::String path;
   struct sockaddr_un server_address;
+  int32_t total_bytes = 0;
 
   static void _bind_methods();
 
@@ -28,6 +29,8 @@ public:
   int open(const godot::String path);
   godot::String get_path() const;
   bool is_open() const;
+  godot::Error write(godot::String request);
+  godot::String read();
   void close();
 
   void set_blocking_mode(const bool value);
