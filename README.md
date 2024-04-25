@@ -44,9 +44,9 @@ scons target=template_release
 | [int][class_int]       | `open(path: String)` | Opens a connection to a socket at `path` and returns an error code |
 | [bool][class_bool]     | `is_open()`          | Checks if the stream peer is connected                             |
 | [String][class_string] | `get_path()`         | Gets the current connected socket path                             |
-| void                   | `close()`            | Closes the socket connection                                       |
 | [String][class_string] | `read()`             | Reads a string from the current connected socket                   |
 | [Error][error_enum]    | `write()`            | Writes a string to the current connected socket                    |
+| void                   | `close()`            | Closes the socket connection                                       |
 
 [class_int]: https://docs.godotengine.org/en/stable/classes/class_int.html
 [class_bool]: https://docs.godotengine.org/en/stable/classes/class_bool.html
